@@ -1,0 +1,16 @@
+{
+  "name": "getting-started-with-slackbots",
+  "version": "1.0.0",
+  "description": "",
+  "main": "bot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Esteban Herrera",
+  "license": "MIT",
+  "dependencies": {
+    "botkit": "^0.2.2",
+    "superagent": "^2.2.0"
+  }
+}
