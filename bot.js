@@ -17,12 +17,15 @@ const bot = controller.spawn({
 
 // Listening for the event when the bot joins a channel
 controller.on('channel_joined', (bot, message) => {
-    bot.reply(`Thank you for inviting me to channel ${message.channel.name}`);
+    bot.say({
+        text: `Thank you for inviting me to channel ${message.channel.name}`,
+        channel: message.channel.id
+    });
 });
 
 // When someone reference a number in a message
 controller.hears(['[0-9]+'], ['ambient'], (bot, message) => {
-    var number = message.match[0];
+    const number = message.match[0];
     request
         .get(`http://numbersapi.com/${number}`)
         .end((err, res) => {
@@ -42,54 +45,54 @@ controller.hears(['trivia'], ['direct_message', 'direct_mention', 'mention'], (b
             // When the answer is general
             {
                 pattern: 'general',
-                callback: (response, convo) => {
-                    askParameter(response, convo, 'Great, give me either a number or the keyword random');
-                    convo.next();
+                callback: (response, convoCallback) => {
+                    askParameter(response, convoCallback, 'Great, give me either a number or the keyword random');
+                    convoCallback.next();
                 }
             },
             // When the answer is math
             {
                 pattern: 'math',
-                callback: (response, convo) => {
-                    askParameter(response, convo, 'Great, give me either a number or the keyword random');
-                    convo.next();
+                callback: (response, convoCallback) => {
+                    askParameter(response, convoCallback, 'Great, give me either a number or the keyword random');
+                    convoCallback.next();
                 }
             },
             // When the answer is date
             {
                 pattern: 'date',
-                callback: (response, convo) => {
-                    askParameter(response, convo, 'Great, give me either a number, or a day of year in the form month/day (eg. 5/15), or the keyword random');
-                    convo.next();
+                callback: (response, convoCallback) => {
+                    askParameter(response, convoCallback, 'Great, give me either a number, or a day of year in the form month/day (eg. 5/15), or the keyword random');
+                    convoCallback.next();
                 }
             },
             // When no valid answer is provided
             {
                 default: true,
-                callback: (response, convo) => {
-                    convo.repeat(); // just repeat the question
-                    convo.next();
+                callback: (response, convoCallback) => {
+                    convoCallback.repeat(); // just repeat the question
+                    convoCallback.next();
                 }
             }
         ], { key: 'type' });
 
-        askParameter = (response, convo, text) => { 
-            convo.ask(text, (response, convo) => {
-                convo.say('All right, let me see...');
-                convo.next(); // End of the conversation
+        askParameter = (response, convoAskParameter, text) => { 
+            convoAskParameter.ask(text, (response, convoAsk) => {
+                convoAsk.say('All right, let me see...');
+                convoAsk.next(); // End of the conversation
             }, { key: 'number' });
         };
 
         // When the conversations ends
-        convo.on('end', convo => {
+        convo.on('end', convoEnd => {
             // And the flow is completed
-            if (convo.status=='completed') {
+            if (convoEnd.status=='completed') {
                 // Extract all the responses in the form of a dictionary
-                //let responses = convo.extractResponses();
+                //let responses = convoEnd.extractResponses();
 
                 // Extract the specific responses by key
-                let type  = convo.extractResponse('type').toLowerCase();
-                let number  = convo.extractResponse('number').toLowerCase();
+                const type  = convoEnd.extractResponse('type').toLowerCase();
+                const number  = convoEnd.extractResponse('number').toLowerCase();
                 
                 // Make the request to the API
                 request
