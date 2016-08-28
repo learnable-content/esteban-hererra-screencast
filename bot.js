@@ -40,6 +40,13 @@ controller.hears(['[0-9]+'], ['ambient'], (bot, message) => {
 controller.hears(['trivia'], ['direct_message', 'direct_mention', 'mention'], (bot, message) => {
     bot.startConversation(message, (err, convo) => {
 
+        const askParameter = (response, convoAskParameter, text) => { 
+            convoAskParameter.ask(text, (response, convoAsk) => {
+                convoAsk.say('All right, let me see...');
+                convoAsk.next(); // End of the conversation
+            }, { key: 'number' });
+        };
+
         convo.ask('What kind of trivia do you want? GENERAL, MATH, or DATE',
         [
             // When the answer is general
@@ -75,13 +82,6 @@ controller.hears(['trivia'], ['direct_message', 'direct_mention', 'mention'], (b
                 }
             }
         ], { key: 'type' });
-
-        askParameter = (response, convoAskParameter, text) => { 
-            convoAskParameter.ask(text, (response, convoAsk) => {
-                convoAsk.say('All right, let me see...');
-                convoAsk.next(); // End of the conversation
-            }, { key: 'number' });
-        };
 
         // When the conversations ends
         convo.on('end', convoEnd => {
