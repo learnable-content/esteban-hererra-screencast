@@ -14,7 +14,7 @@ You can follow the [tutorial](http://sitepoint.com) to build this application or
 3. Copy the token given by Slack
 4. Start the bot with `token=<YOUR_BOT_TOKEN> node bot.js`
 5. Invite the bot to one of your team's channels with `/invite @<NAME_OF_YOUR_BOT>`
-6. Play with the bot. It will give a random fact every time a number is mentioned in a message. Or initiate a conversation with a direct mention or a direct message with the word `trivia`, for example, `@<NAME_OF_YOUR_BOT> trivia`.
+6. Play with the bot. It will give a random fact every time a number is mentioned in a message. Or initiate a conversation with either a mention, a direct mention, or a direct message with the word `trivia`, for example, `@<NAME_OF_YOUR_BOT> trivia`.
 
 # License
 MIT
