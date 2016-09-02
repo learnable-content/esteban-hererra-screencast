@@ -91,7 +91,9 @@ controller.hears(['trivia'], ['direct_message', 'direct_mention', 'mention'], (b
                 //let responses = convoEnd.extractResponses();
 
                 // Extract the specific responses by key
-                const type  = convoEnd.extractResponse('type').toLowerCase();
+                const type  = convoEnd.extractResponse('type').toLowerCase() !== 'general' 
+                                    ? convoEnd.extractResponse('type').toLowerCase() 
+                                    : '';
                 const number  = convoEnd.extractResponse('number').toLowerCase();
                 
                 // Make the request to the API
