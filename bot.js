@@ -10,8 +10,8 @@ if (!process.env.token) {
 // Creates the Slack bot
 const controller = Botkit.slackbot();
 
-// Creates the bot object
-const bot = controller.spawn({
+// Starts the websocket connection
+controller.spawn({
     token: process.env.token
 }).startRTM();
 
@@ -48,40 +48,41 @@ controller.hears(['trivia'], ['direct_message', 'direct_mention', 'mention'], (b
         };
 
         convo.ask('What kind of trivia do you want? GENERAL, MATH, or DATE',
-        [
-            // When the answer is general
-            {
-                pattern: 'general',
-                callback: (response, convoCallback) => {
-                    askParameter(response, convoCallback, 'Great, give me either a number or the keyword random');
-                    convoCallback.next();
+            [
+                // When the answer is general
+                {
+                    pattern: 'general',
+                    callback: (response, convoCallback) => {
+                        askParameter(response, convoCallback, 'Great, give me either a number or the keyword random');
+                        convoCallback.next();
+                    }
+                },
+                // When the answer is math
+                {
+                    pattern: 'math',
+                    callback: (response, convoCallback) => {
+                        askParameter(response, convoCallback, 'Great, give me either a number or the keyword random');
+                        convoCallback.next();
+                    }
+                },
+                // When the answer is date
+                {
+                    pattern: 'date',
+                    callback: (response, convoCallback) => {
+                        askParameter(response, convoCallback, 'Great, give me either a number, or a day of year in the form month/day (eg. 5/15), or the keyword random');
+                        convoCallback.next();
+                    }
+                },
+                // When no valid answer is provided
+                {
+                    default: true,
+                    callback: (response, convoCallback) => {
+                        convoCallback.repeat(); // just repeat the question
+                        convoCallback.next();
+                    }
                 }
-            },
-            // When the answer is math
-            {
-                pattern: 'math',
-                callback: (response, convoCallback) => {
-                    askParameter(response, convoCallback, 'Great, give me either a number or the keyword random');
-                    convoCallback.next();
-                }
-            },
-            // When the answer is date
-            {
-                pattern: 'date',
-                callback: (response, convoCallback) => {
-                    askParameter(response, convoCallback, 'Great, give me either a number, or a day of year in the form month/day (eg. 5/15), or the keyword random');
-                    convoCallback.next();
-                }
-            },
-            // When no valid answer is provided
-            {
-                default: true,
-                callback: (response, convoCallback) => {
-                    convoCallback.repeat(); // just repeat the question
-                    convoCallback.next();
-                }
-            }
-        ], { key: 'type' });
+            ], { key: 'type' }
+        );
 
         // When the conversations ends
         convo.on('end', convoEnd => {
