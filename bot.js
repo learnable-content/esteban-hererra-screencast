@@ -1,16 +1,16 @@
 const Botkit = require('botkit');
 const request = require('superagent');
 const Wit = require('node-wit').Wit;
-const log = require('node-wit').log;
+const Log = require('node-wit').log;
 
 // Cheking for the token
 if (!process.env.token) {
-  console.log('Error: Specify a Slack token in an environment variable');
+  console.error('Error: Specify a Slack token in an environment variable');
   process.exit(1);
 }
 
 if (!process.env.wit_token) {
-  console.log('Error: Specify a Wit token in an environment variable');
+  console.error('Error: Specify a Wit token in an environment variable');
   process.exit(1);
 }
 
@@ -20,19 +20,23 @@ const controller = Botkit.slackbot();
 // Starts the websocket connection
 controller.spawn({
   token: process.env.token
-}).startRTM();
+}).startRTM(err => {
+  if (err) {
+    console.error(`Error: Could not start the bot - ${err}`);
+  }
+});
 
 // Listening for the event when the bot joins a channel
-controller.on('channel_joined', (bot, message) => {
+controller.on('channel_joined', (bot, { channel: { id, name } }) => {
   bot.say({
-    text: `Thank you for inviting me to channel ${message.channel.name}`,
-    channel: message.channel.id
+    text: `Thank you for inviting me to channel ${name}`,
+    channel: id
   });
 });
 
 // When someone reference a number in a message
 controller.hears(['[0-9]+'], ['ambient'], (bot, message) => {
-  const number = message.match[0];
+  const [ number ] = message.match;
   request
     .get(`http://numbersapi.com/${number}`)
     .end((err, res) => {
@@ -50,91 +54,87 @@ controller.hears(['[0-9]+'], ['ambient'], (bot, message) => {
 // sessionId -> {userId: userId, context: sessionState, bot: botObject, message: messageObject}
 const sessions = {};
 
-const findOrCreateSession = (userId, bot, message) => {
-  let sessionId = null;
-  // Let's see if we already have a session for the user
-  Object.keys(sessions).forEach(key => {
-    if (sessions[key].userId === userId) {
-      // Yep, got it!
-      sessionId = key;
-    }
-  });
-  if (!sessionId) {
+const maybeCreateSession = (userId, bot, message) => {
+  if (!sessions[userId]) {
     // No session found for user, let's create a new one
-    sessionId = new Date().toISOString();
-    sessions[sessionId] = { userId: userId, context: {}, bot: bot, message: message };
+    sessions[userId] = {
+      userId,
+      context: {},
+      bot,
+      message
+    };
   }
-  return sessionId;
+
+  return userId;
 };
 
 //Extract an entity value from the entities returned by Wit
 const firstEntityValue = (entities, entity) => {
-  const val = entities && entities[entity] &&
-    Array.isArray(entities[entity]) &&
-    entities[entity].length > 0 &&
-    entities[entity][0].value;
+  const match = entities && entities[entity];
+  const isFullArray = Array.isArray(match) && match.length > 0;
+  const val = isFullArray ? match[0].value : null;
 
   if (!val) {
     return null;
   }
+
   return typeof val === 'object' ? val.value : val;
 };
 
 // Our bot actions
 const actions = {
   send(req, res) {
-    const sessionId = req.sessionId;
-    const text = res.text;
     // Our bot has something to say!
     // Let's retrieve the bot and message objects to post a message
-    const bot = sessions[sessionId].bot;
-    const message = sessions[sessionId].message;
+    const { bot, message } = sessions[req.sessionId];
+    const text = res.text;
 
     // We return a promise to let our bot know when we're done sending
-    return new Promise(function(resolve) {
+    return new Promise(resolve => {
       bot.reply(message, text);
       return resolve();
     });
   },
-  getTrivia(req) {
-    return new Promise(function(resolve) {
-      const context = req.context;
-      const entities = req.entities;
-
+  getTrivia({ context, entities }) {
+    return new Promise(resolve => {
       const intent = firstEntityValue(entities, 'intent');
       const rawType = firstEntityValue(entities, 'type');
+      const random = firstEntityValue(entities, 'random');
+
       const type = (rawType
           ? rawType !== 'general' ? rawType : ''
           : context.type)
         || '';
-      const random = firstEntityValue(entities, 'random');
       const number = random ? 'random' : firstEntityValue(entities, 'number');
+      const newContext = Object.assign({}, context);
 
-      if ((intent && intent === 'trivia') || number) {
-        if (number) {
-          // Make the request to the API
-          request
-            .get(`http://numbersapi.com/${number}/${type}`)
-            .end((err, res) => {
-                if (err) {
-                  context.response = 'Sorry, I couldn\'t process your request';
-                } else {
-                  context.response = res.text;
-                }
-                context.done = true;
-                delete context.missingNumber;
-                return resolve(context);
+      if (intent && (intent === 'trivia')) {
+        newContext.type = type;
+        newContext.missingNumber = true;
+
+        return resolve(newContext);
+      } else if (number) {
+        // Make the request to the API
+        request
+          .get(`http://numbersapi.com/${number}/${type}`)
+          .end((err, { text }) => {
+              if (err) {
+                newContext.response = 'Sorry, I couldn\'t process your request';
+              } else {
+                newContext.response = text;
               }
-            );
-        } else {
-          context.type = type;
-          context.missingNumber = true;
-          return resolve(context);
-        }
+              newContext.done = true;
+              delete newContext.missingNumber;
+
+              return resolve(newContext);
+            }
+          );
       } else {
-        context.response = 'Sorry, I didn\'t understand what you want. I\'m still just a bot, can you try again?';
-        context.done = true;
-        return resolve(context);
+        newContext.response = 'Sorry, I didn\'t understand what you want. I\'m still just a bot, ' +
+          'can you try again?';
+        newContext.done = true;
+
+        return resolve(newContext);
       }
     });
   },
@@ -144,15 +144,15 @@ const actions = {
 const wit = new Wit({
   accessToken: process.env.wit_token,
   actions,
-  logger: new log.Logger(log.INFO)
+  logger: new Log.Logger(Log.DEBUG)
 });
 
 controller.hears(['(.*)'], ['direct_mention', 'mention'], (bot, message) => {
-  const text = message.match[0];
+  const [ text ] = message.match;
 
   // We retrieve the user's current session, or create one if it doesn't exist
   // This is needed for our bot to figure out the conversation history
-  const sessionId = findOrCreateSession(message.user, bot, message);
+  const sessionId = maybeCreateSession(message.user, bot, message);
 
   // Let's forward the message to the Wit.ai Bot Engine
   // This will run all actions until our bot has nothing left to do
@@ -160,7 +160,7 @@ controller.hears(['(.*)'], ['direct_mention', 'mention'], (bot, message) => {
     sessionId, // the user's current session
     text, // the user's message
     sessions[sessionId].context // the user's current session state
-  ).then((context) => {
+  ).then(context => {
     // Our bot did everything it has to do.
     // Now it will be waiting for further user messages to proceed.
 
