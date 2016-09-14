@@ -51,7 +51,7 @@ controller.hears(['[0-9]+'], ['ambient'], (bot, message) => {
 
 // This will contain all user sessions.
 // Each session has an entry:
-// sessionId -> {userId: userId, context: sessionState, bot: botObject, message: messageObject}
+// sessionId -> {userId, context: sessionState, botObject, messageObject}
 const sessions = {};
 
 const maybeCreateSession = (userId, bot, message) => {
@@ -68,7 +68,7 @@ const maybeCreateSession = (userId, bot, message) => {
   return userId;
 };
 
-//Extract an entity value from the entities returned by Wit
+// Extract an entity value from the entities returned by Wit
 const firstEntityValue = (entities, entity) => {
   const match = entities && entities[entity];
   const isFullArray = Array.isArray(match) && match.length > 0;
@@ -108,16 +108,12 @@ const actions = {
       const number = random ? 'random' : firstEntityValue(entities, 'number');
       const newContext = Object.assign({}, context);
 
-      if (intent && (intent === 'trivia')) {
-        newContext.type = type;
-        newContext.missingNumber = true;
-
-        return resolve(newContext);
-      } else if (number) {
-        // Make the request to the API
-        request
-          .get(`http://numbersapi.com/${number}/${type}`)
-          .end((err, { text }) => {
+      if (intent && (intent === 'trivia') || number) {
+        if (number) {
+          // Make the request to the API
+          request
+            .get(`http://numbersapi.com/${number}/${type}`)
+            .end((err, { text }) => {
               if (err) {
                 newContext.response = 'Sorry, I couldn\'t process your request';
               } else {
@@ -129,6 +125,12 @@ const actions = {
               return resolve(newContext);
             }
           );
+        } else {
+          newContext.type = type;
+          newContext.missingNumber = true;
+
+          return resolve(newContext);
+        }
       } else {
         newContext.response = 'Sorry, I didn\'t understand what you want. I\'m still just a bot, ' +
           'can you try again?';
@@ -144,7 +146,7 @@ const actions = {
 const wit = new Wit({
   accessToken: process.env.wit_token,
   actions,
-  logger: new Log.Logger(Log.DEBUG)
+  logger: new Log.Logger(Log.INFO)
 });
 
 controller.hears(['(.*)'], ['direct_mention', 'mention'], (bot, message) => {
