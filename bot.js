@@ -13,7 +13,11 @@ const controller = Botkit.slackbot();
 // Starts the websocket connection
 controller.spawn({
   token: process.env.token
-}).startRTM();
+}).startRTM(err => {
+  if (err) {
+    console.error(`Error: Could not start the bot - ${err}`);
+  }
+});
 
 // Listening for the event when the bot joins a channel
 controller.on('channel_joined', (bot, message) => {
