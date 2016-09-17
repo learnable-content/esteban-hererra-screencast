@@ -1,5 +1,5 @@
 {
-  "name": "slackbots-and-natural-language",
+  "name": "getting-started-with-slackbots",
   "version": "1.0.0",
   "description": "",
   "main": "bot.js",
@@ -15,4 +15,3 @@
     "superagent": "^2.2.0"
   }
 }
-

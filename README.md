@@ -1,6 +1,6 @@
-# Slackbots and natural language
+# Slack Incoming Webhooks
 
-This Slackbot is a wrapper for the Numbers API that shows how to process natural language using Wit.ai and BotKit.
+This Slackbot is a wrapper for the Numbers API that shows how incoming webhooks in Slack work using BotKit.
 
 You can follow the [tutorial](http://sitepoint.com) to build this application or jump straight to the code.
 
@@ -11,21 +11,16 @@ You can follow the [tutorial](http://sitepoint.com) to build this application or
 
 # Installation
 1. Clone this branch and `cd` into it.
-2. Go to https://my.slack.com/apps/build/custom-integration and create a Bot.
-3. Go to https://wit.ai/ and create a new app by importing `NumberBotApp.zip`.
-4. Once the app is created, wait a few seconds and check if the circle next to the app name becomes green. As Wit.ai is still in beta, sometimes this doesn't happen, so go to the Settings tab to delete the app and create it again. You may have to do this a few times before the app shows a green status.
-5. Once the app is created correctly, go to the Settings tab and generate a Server Access Token if none is shown by clicking the *Reset Token* icon.
-6. Open a terminal window and install the dependencies with `npm install`
-7. Start the bot with the command `token=<YOUR_BOT_TOKEN> wit_token=<YOUR_WIT_AI_SERVER_ACCESS_TOKEN> node bot.js` by copying the token given by Slack and Wit.ai.
-8. Invite the bot to one of your team's channels with `/invite @<NAME_OF_YOUR_BOT>`.
-9. Play with the bot. It will give a random fact every time a number is mentioned in a message. Or ask for a general, math, or date fact, with, for example:
-    - Give me some general fact about one
-    - What's with 10 as a date?
-    - What can you tell me about twenty?
-    - Tell me something interesting about 7
-    - Give me a date fact about 4
-    - Give me a math fact
-10. If the bot doesn't recognize one of your messages, or you want it to recognize more phrases, you can train it on Wit.ai in the *Understanding* tab or by validating the messages on the *Inbox* tab.
+2. Open a terminal window and execute the following command to create a config file: `cp config.sample.js config.js`.
+3. Go to https://my.slack.com/apps/build/custom-integration and create a Bot.
+4. Return to https://my.slack.com/apps/build/custom-integration and this time, create an Incoming Webhook.
+5. Copy the Webhook URL into `config.js`. While you're there, you can also change the frequency in which the the incoming webhooks will be sent.
+6. Go to https://wit.ai/ and create a new app by importing `NumberBotApp.zip`.
+7. Once the app is created, wait a few seconds and check if the circle next to the app name becomes green. As Wit.ai is still in beta, sometimes this doesn't happen, so go to the Settings tab to delete the app and create it again. You may have to do this a few times before the app shows a green status.
+8. Once the app is created correctly, go to the Settings tab and generate a Server Access Token if none is shown by clicking the *Reset Token* icon.
+9. In a terminal window, install the app dependencies with `npm install`
+10. Start the bot with the command `token=<YOUR_BOT_TOKEN> wit_token=<YOUR_WIT_AI_SERVER_ACCESS_TOKEN> node bot.js` by copying the token given by Slack and Wit.ai.
+11. After the time specified on `config.js`, the bot will post a message in the channel you configured when the incoming webhook was created. Uncomment lines 50-70 in `bot.js` to change how these messages are sent.
 
 # License
 MIT

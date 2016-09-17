@@ -2,6 +2,7 @@ const Botkit = require('botkit');
 const request = require('superagent');
 const Wit = require('node-wit').Wit;
 const Log = require('node-wit').log;
+const config = require('./config');
 
 // Cheking for the token
 if (!process.env.token) {
@@ -17,14 +18,73 @@ if (!process.env.wit_token) {
 // Creates the Slack bot
 const controller = Botkit.slackbot();
 
-// Starts the websocket connection
-controller.spawn({
-  token: process.env.token
+// Starts the websocket connection with the incoming webhook configuration
+const bot = controller.spawn({
+  token: process.env.token,
+  incoming_webhook: {
+    url: config.WEBHOOK_URL
+  }
 }).startRTM(err => {
   if (err) {
     console.error(`Error: Could not start the bot - ${err}`);
   }
 });
+
+// Or configure an already spawned bot
+// bot.configureIncomingWebhook({url: process.env.webhook_url});
+
+// Incoming webhook specific code
+const sendTrivia = () => {
+  const date = new Date();
+  const today = `${date.getMonth() + 1}/${date.getDate()}`;
+    
+  request
+    .get(`http://numbersapi.com/${today}/date`)
+    .end((err, res) => {
+      if(err) {
+        console.log('Got an error from the Numbers API: ', err.stack || err);
+      } else {
+        // Send the webhook
+        bot.sendWebhook({
+          text: res.text,
+          //username: 'new-bot-name',
+          //icon_emoji: ':point_right:',
+          //channel: '#general',
+          //channel: '@<USER_NAME_FOR_DM>',
+          /*attachments: [
+            {
+              fallback: 'Fallback message',
+              pretext: 'Pretext message',
+              color: '#0000ff',
+              fields: [
+                {
+                  title: 'Field title',
+                  value: 'Some text',
+                  short: false
+                }
+              ]
+            }
+          ],*/
+          //text: `${res.text} https://www.flickr.com/photos/saba1312/29474407015`,
+          //text: `${res.text} https://www.sitepoint.com/`,
+          //unfurl_links: true
+        },
+        function(err,res) {
+          if (err) {
+            console.log('Got an error when sending the webhook: ', err.stack || err);
+          } else {
+            console.log(res);
+          }
+        });
+      }
+    }
+  );
+};
+
+// Send an incoming webhook every X milliseconds
+const interval = config.SEND_TRIVIA_FREQ_MS; 
+setInterval(sendTrivia, interval);
+
 
 // Listening for the event when the bot joins a channel
 controller.on('channel_joined', (bot, { channel: { id, name } }) => {
@@ -40,10 +100,11 @@ controller.hears(['[0-9]+'], ['ambient'], (bot, message) => {
   request
     .get(`http://numbersapi.com/${number}`)
     .end((err, res) => {
-      if (!err) {
-        bot.reply(message, res.text);
+        if (!err) {
+          bot.reply(message, res.text);
+        }
       }
-    });
+    );
 });
 
 // Wit.ai bot specific code
@@ -106,6 +167,7 @@ const actions = {
         || '';
       const number = random ? 'random' : firstEntityValue(entities, 'number');
       const newContext = Object.assign({}, context);
+      console.log(entities);
 
       if (intent && (intent === 'trivia') || number) {
         if (number) {
