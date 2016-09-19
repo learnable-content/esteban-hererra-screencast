@@ -100,11 +100,10 @@ controller.hears(['[0-9]+'], ['ambient'], (bot, message) => {
   request
     .get(`http://numbersapi.com/${number}`)
     .end((err, res) => {
-        if (!err) {
-          bot.reply(message, res.text);
-        }
+      if (!err) {
+        bot.reply(message, res.text);
       }
-    );
+    });
 });
 
 // Wit.ai bot specific code
