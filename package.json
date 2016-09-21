@@ -1,5 +1,5 @@
 {
-  "name": "getting-started-with-slackbots",
+  "name": "slack-incoming-webhooks",
   "version": "1.0.0",
   "description": "",
   "main": "bot.js",
