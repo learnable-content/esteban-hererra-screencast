@@ -31,7 +31,7 @@ const botObj = controller.spawn({
 });
 
 // Or configure an already spawned bot
-// bot.configureIncomingWebhook({url: config.WEBHOOK_URL});
+// botObj.configureIncomingWebhook({url: config.WEBHOOK_URL});
 
 // Incoming webhook specific code
 const sendTrivia = () => {
@@ -42,7 +42,7 @@ const sendTrivia = () => {
     .get(`http://numbersapi.com/${today}/date`)
     .end((err, res) => {
       if (err) {
-        console.log('Got an error from the Numbers API: ', err.stack || err);
+        console.error('Got an error from the Numbers API: ', err.stack || err);
       } else {
         // Send the webhook
         botObj.sendWebhook({
@@ -71,7 +71,7 @@ const sendTrivia = () => {
         },
         (webhookErr, webhookRes) => {
           if (webhookErr) {
-            console.log('Got an error when sending the webhook: ', webhookErr.stack || webhookErr);
+            console.error('Got an error when sending the webhook: ', webhookErr.stack || webhookErr);
           } else {
             console.log(webhookRes);
           }
