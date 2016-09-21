@@ -19,33 +19,33 @@ if (!process.env.wit_token) {
 const controller = Botkit.slackbot();
 
 // Starts the websocket connection with the incoming webhook configuration
-const bot = controller.spawn({
+const botObj = controller.spawn({
   token: process.env.token,
   incoming_webhook: {
-    url: config.WEBHOOK_URL
-  }
-}).startRTM(err => {
+    url: config.WEBHOOK_URL,
+  },
+}).startRTM((err) => {
   if (err) {
     console.error(`Error: Could not start the bot - ${err}`);
   }
 });
 
 // Or configure an already spawned bot
-// bot.configureIncomingWebhook({url: process.env.webhook_url});
+// bot.configureIncomingWebhook({url: config.WEBHOOK_URL});
 
 // Incoming webhook specific code
 const sendTrivia = () => {
   const date = new Date();
   const today = `${date.getMonth() + 1}/${date.getDate()}`;
-    
+
   request
     .get(`http://numbersapi.com/${today}/date`)
     .end((err, res) => {
-      if(err) {
+      if (err) {
         console.log('Got an error from the Numbers API: ', err.stack || err);
       } else {
         // Send the webhook
-        bot.sendWebhook({
+        botObj.sendWebhook({
           text: res.text,
           //username: 'new-bot-name',
           //icon_emoji: ':point_right:',
@@ -69,11 +69,11 @@ const sendTrivia = () => {
           //text: `${res.text} https://www.sitepoint.com/`,
           //unfurl_links: true
         },
-        function(err,res) {
-          if (err) {
-            console.log('Got an error when sending the webhook: ', err.stack || err);
+        (webhookErr, webhookRes) => {
+          if (webhookErr) {
+            console.log('Got an error when sending the webhook: ', webhookErr.stack || webhookErr);
           } else {
-            console.log(res);
+            console.log(webhookRes);
           }
         });
       }
@@ -82,7 +82,7 @@ const sendTrivia = () => {
 };
 
 // Send an incoming webhook every X milliseconds
-const interval = config.SEND_TRIVIA_FREQ_MS; 
+const interval = config.SEND_TRIVIA_FREQ_MS;
 setInterval(sendTrivia, interval);
 
 
@@ -90,13 +90,13 @@ setInterval(sendTrivia, interval);
 controller.on('channel_joined', (bot, { channel: { id, name } }) => {
   bot.say({
     text: `Thank you for inviting me to channel ${name}`,
-    channel: id
+    channel: id,
   });
 });
 
 // When someone reference a number in a message
 controller.hears(['[0-9]+'], ['ambient'], (bot, message) => {
-  const [ number ] = message.match;
+  const [number] = message.match;
   request
     .get(`http://numbersapi.com/${number}`)
     .end((err, res) => {
@@ -120,7 +120,7 @@ const maybeCreateSession = (userId, bot, message) => {
       userId,
       context: {},
       bot,
-      message
+      message,
     };
   }
 
@@ -149,13 +149,13 @@ const actions = {
     const text = res.text;
 
     // We return a promise to let our bot know when we're done sending
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       bot.reply(message, text);
       return resolve();
     });
   },
   getTrivia({ context, entities }) {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const intent = firstEntityValue(entities, 'intent');
       const rawType = firstEntityValue(entities, 'type');
       const random = firstEntityValue(entities, 'random');
@@ -166,9 +166,8 @@ const actions = {
         || '';
       const number = random ? 'random' : firstEntityValue(entities, 'number');
       const newContext = Object.assign({}, context);
-      console.log(entities);
 
-      if (intent && (intent === 'trivia') || number) {
+      if ((intent && intent === 'trivia') || number) {
         if (number) {
           // Make the request to the API
           request
@@ -206,11 +205,11 @@ const actions = {
 const wit = new Wit({
   accessToken: process.env.wit_token,
   actions,
-  logger: new Log.Logger(Log.INFO)
+  logger: new Log.Logger(Log.INFO),
 });
 
 controller.hears(['(.*)'], ['direct_mention', 'mention'], (bot, message) => {
-  const [ text ] = message.match;
+  const [text] = message.match;
 
   // We retrieve the user's current session, or create one if it doesn't exist
   // This is needed for our bot to figure out the conversation history
@@ -222,7 +221,7 @@ controller.hears(['(.*)'], ['direct_mention', 'mention'], (bot, message) => {
     sessionId, // the user's current session
     text, // the user's message
     sessions[sessionId].context // the user's current session state
-  ).then(context => {
+  ).then((context) => {
     // Our bot did everything it has to do.
     // Now it will be waiting for further user messages to proceed.
 
@@ -238,3 +237,4 @@ controller.hears(['(.*)'], ['direct_mention', 'mention'], (bot, message) => {
       console.error('Got an error from Wit: ', err.stack || err);
     });
 });
+
