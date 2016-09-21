@@ -50,7 +50,7 @@ const sendTrivia = () => {
           //username: 'new-bot-name',
           //icon_emoji: ':point_right:',
           //channel: '#general',
-          //channel: '@<USER_NAME_FOR_DM>',
+          //channel: '@USER_NAME_FOR_DM',
           /*attachments: [
             {
               fallback: 'Fallback message',
