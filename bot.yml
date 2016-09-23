@@ -1,0 +1,14 @@
+name: testbot
+description: A sample bot for Beep Boop
+config:
+  - name: wit_token
+    friendly_name: Wit.ai Token
+    info: The Wit.ai Token
+    type: secret
+    global: true
+slackscopes:
+  - bot
+  - incoming-webhook
+  - commands
+  - reactions:write
+  - chat:write:bot
