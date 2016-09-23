@@ -1,6 +1,6 @@
-# Slack Apps and Beepboop
+# Interactive messages and rich formatting message in Slack
 
-This Slackbot is ready to be deployed in [Beepboop](https://beepboophq.com) as a Slack App. It belongs to the fifth part of a series of tutorials about Slackbots.
+This Slackbot is ready to be deployed in [Beepboop](https://beepboophq.com) as a Slack App and shows how interactive messages work and some rich formatting options available in Botkit. It belongs to the sixth part of a series of tutorials about Slackbots.
 
 You can follow the [tutorial](http://sitepoint.com) to build this application or jump straight to the code.
 
@@ -18,11 +18,12 @@ You can follow the [tutorial](http://sitepoint.com) to build this application or
 5. Create a new Beepboop project with your forked repository.
 6. Follow the instructions to create an Slack app with a bot user and link it to your Beepboop project.
 7. Configure a Slash Command in your Slack app.
-8. In Beepboop, go to the *Settings* tab in your project and enable *Multi-Team Socket Mode*. Also, on this page, enter your Wit.ai token
-9. Make a commit to some file of the project to start the building process.
-10. On Beepboop start your bot on the *Status* tab.
-11. Go to the page of your bot at [https://beepboophq.com/bots/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>](https://beepboophq.com/bots/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx), where `xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx` is the ID of your project, and install the Slack app in one of your Slack teams. 
-12. Play with the bot by sending a message with a number, asking for a trivia with a direct message, or executing the slash command.
+8. Enable Interactive Messages.
+9. In Beepboop, go to the *Settings* tab in your project and enable *Multi-Team Socket Mode*. Also, on this page, enter your Wit.ai token
+10. Make a commit to some file of the project to start the building process.
+11. On Beepboop start your bot on the *Status* tab.
+12. Go to the page of your bot at [https://beepboophq.com/bots/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>](https://beepboophq.com/bots/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx), where `xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx` is the ID of your project, and install the Slack app in one of your Slack teams. 
+13. Play with the bot by sending a message with a number, asking for a trivia with a direct message, or executing the slash command.
 
 # License
 MIT

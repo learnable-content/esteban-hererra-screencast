@@ -10,6 +10,7 @@ const port = process.env.PORT || 3000;
 
 // Creates the Slack bot
 const controller = Botkit.slackbot({
+  debug: false,
   retry: Infinity, // reconnect to Slack RTM when connection goes bad
 });
 
@@ -49,7 +50,7 @@ controller.on('slash_command', (bot, message) => {
   }
 
   // Immediately reply a confirmation to user
-  bot.replyPrivate(message, 'Command received...');
+  bot.replyPrivate(message, 'Command received :hourglass:');
 
   request
     .get(`http://numbersapi.com/${number}`)
@@ -112,16 +113,76 @@ controller.on('channel_joined', (bot, { channel: { id, name } }) => {
   });
 });
 
-// When someone reference a number in a message
+const CALLBACK_ID = 'triviaCommand';
+// When someone references a number in a message
 controller.hears(['[0-9]+'], ['ambient'], (bot, message) => {
-  const [number] = message.match;
-  request
-    .get(`http://numbersapi.com/${number}`)
-    .end((err, res) => {
-      if (!err) {
-        bot.reply(message, res.text);
-      }
-    });
+  bot.api.reactions.add({
+    timestamp: message.ts,
+    channel: message.channel,
+    name: 'thinking_face',
+  }, (err) => {
+    if (err) {
+      console.log(err);
+    }
+  });
+
+  const number = message.match[0];
+
+  // Reply with an message button
+  bot.reply(message, {
+    text: `What kind of trivia about ${number} do you want?`,
+    attachments: [
+      {
+        text: 'Choose the type of trivia',
+        callback_id: CALLBACK_ID,
+        attachment_type: 'default',
+        color: '#3AA3E3',
+        actions: [
+          {
+            name: 'general',
+            text: 'General',
+            value: number,
+            type: 'button',
+          },
+          {
+            name: 'math',
+            text: 'Math',
+            value: number,
+            type: 'button',
+          },
+          {
+            name: 'date',
+            text: 'Date',
+            value: number,
+            type: 'button',
+          },
+        ],
+      },
+    ],
+  });
+});
+
+controller.on('interactive_message_callback', (bot, message) => {
+  console.log(message);
+  bot.replyAcknowledge();
+
+  if (message.callback_id === CALLBACK_ID) {
+    const response = message.actions[0];
+    const type = response.name !== 'general'
+                   ? response.name
+                   : '';
+    const number = response.value;
+
+    request
+      .get(`http://numbersapi.com/${number}/${type}`)
+      .end((err, res) => {
+        if (err) {
+          bot.replyInteractive(message, 'Got an error, can you try again with a valid number?');
+        } else {
+          bot.replyInteractive(message, res.text);
+        }
+      });
+  }
 });
 
 // Wit.ai bot specific code
@@ -194,7 +255,7 @@ const actions = {
               if (err) {
                 newContext.response = 'Sorry, I couldn\'t process your request';
               } else {
-                newContext.response = text;
+                newContext.response = `*This is what I found* :point_down:\n_${text}_`;
               }
               newContext.done = true;
               delete newContext.missingNumber;
@@ -227,6 +288,7 @@ const wit = new Wit({
 });
 
 controller.hears(['(.*)'], ['direct_mention', 'mention'], (bot, message) => {
+  bot.startTyping(message);
   const [text] = message.match;
 
   // We retrieve the user's current session, or create one if it doesn't exist
