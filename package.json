@@ -1,16 +1,16 @@
 {
-  "name": "outgoing-webhooks-vs-slash-commands",
+  "name": "getting-started-with-slack-apps",
   "version": "1.0.0",
   "description": "",
   "main": "bot.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node bot.js"
   },
   "keywords": [],
   "author": "Esteban Herrera",
   "license": "MIT",
   "dependencies": {
-    "botkit": "^0.2.1",
+    "botkit": "https://github.com/howdyai/botkit/tarball/master",
     "node-wit": "^4.1.0",
     "superagent": "^2.2.0"
   }

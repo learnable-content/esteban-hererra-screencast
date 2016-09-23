@@ -4,42 +4,40 @@ const Wit = require('node-wit').Wit;
 const Log = require('node-wit').log;
 const config = require('./config');
 
-// Cheking for the Slack, Wit.ai, incoming webhook URL, and Slack Command tokens
-if (!process.env.token || !process.env.wit_token || !process.env.cmd_token) {
-  console.log('Error: Specify a Slack token, a Wit token, ' +
-    'and Slack Command Token as environment variables');
-  process.exit(1);
-}
 
 // Server port for outcoming webhook and slack command
-const port = process.env.port || 3000;
+const port = process.env.PORT || 3000;
 
 // Creates the Slack bot
-const controller = Botkit.slackbot();
+const controller = Botkit.slackbot({
+  retry: Infinity, // reconnect to Slack RTM when connection goes bad
+});
 
 // Starts the websocket connection with the incoming webhook configuration
-const botObj = controller.spawn({
-  token: process.env.token,
-  incoming_webhook: {
-    url: config.WEBHOOK_URL,
-  },
-}).startRTM((err) => {
-  if (err) {
-    console.error(`Error: Could not start the bot - ${err}`);
+const beepboop = require('beepboop-botkit').start(controller, { debug: true });
+
+// Send the user who added the bot to their team a welcome message the first time it's connected
+beepboop.on('botkit.rtm.started', (bot, resource, meta) => {
+  const slackUserId = resource.SlackUserID;
+
+  if (meta.isNew && slackUserId) {
+    bot.startPrivateConversation({ user: slackUserId }, (err, convo) => {
+      if (err) {
+        console.log(err);
+      } else {
+        convo.say('I am a bot that has just joined your team');
+        convo.say('You must now /invite me to a channel so that I can be of use!');
+      }
+    });
   }
 });
 
+
 // Outcoming webhook and slack command specific code
 controller.setupWebserver(port, (err, expressWebserver) => {
-  controller.createWebhookEndpoints(expressWebserver, [process.env.cmd_token]);
+  controller.createWebhookEndpoints(expressWebserver, [process.env.SLACK_VERIFY_TOKEN]);
 });
 
-controller.on('outgoing_webhook', function(bot, message) {
-  console.log(message);
-
-  // reply to outgoing webhook command
-  bot.replyPublic(message,'Everyone can see the results of this webhook command');
-});
 
 controller.on('slash_command', (bot, message) => {
   let number;
@@ -77,15 +75,23 @@ const sendTrivia = () => {
       if (err) {
         console.error('Got an error from the Numbers API: ', err.stack || err);
       } else {
-        // Send the webhook
-        botObj.sendWebhook({
-          text: res.text,
-        },
-        (webhookErr, webhookRes) => {
-          if (webhookErr) {
-            console.error('Got an error when sending the webhook: ', webhookErr.stack || webhookErr);
-          } else {
-            console.log(webhookRes);
+        // Send the webhook to all teams
+        Object.keys(beepboop.workers).forEach((id) => {
+          // this is an instance of a botkit worker
+          const bot = beepboop.workers[id].worker;
+
+          if (bot.config.SlackIncomingWebhookURL) {
+            bot.configureIncomingWebhook({ url: bot.config.SlackIncomingWebhookURL });
+            bot.sendWebhook({
+              text: res.text,
+            },
+            (webhookErr, webhookRes) => {
+              if (webhookErr) {
+                console.error('Got an error when sending the webhook: ', webhookErr.stack || webhookErr);
+              } else {
+                console.log(webhookRes);
+              }
+            });
           }
         });
       }

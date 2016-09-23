@@ -1,6 +1,6 @@
-# Outgoing Webhooks vs Slash Commands
+# Slack Apps and Beepboop
 
-This Slackbot shows how to use outgoing webhooks and Slash Commands with BotKit. It belongs to the fourth part of a series of tutorials about Slackbots.
+This Slackbot is ready to be deployed in [Beepboop](https://beepboophq.com) as a Slack App. It belongs to the fifth part of a series of tutorials about Slackbots.
 
 You can follow the [tutorial](http://sitepoint.com) to build this application or jump straight to the code.
 
@@ -10,21 +10,19 @@ You can follow the [tutorial](http://sitepoint.com) to build this application or
 - [Node.js](https://nodejs.org/en/download/) version 5 or higher.
 
 # Installation
-1. Clone this branch and `cd` into it.
-2. Open a terminal window and execute the following command to create a config file: `cp config.sample.js config.js`.
-3. Go to https://my.slack.com/apps/build/custom-integration and create a Bot.
-4. Return to https://my.slack.com/apps/build/custom-integration and this time, create an Incoming Webhook.
-5. Copy the Webhook URL into `config.js`. While you're there, you can also change the frequency in which the the incoming webhooks will be sent.
-6. Open a new terminal window and install [Localtunnel](https://localtunnel.github.io/www/) globally with `npm install -g localtunnel`.
-7. Once installed, execute `lt --port 3000 --subdomain testingbots` (or any other subdomain if it's not available).
-8. Return to https://my.slack.com/apps/build/custom-integration and this time, create an Outgoing Webhook. In the URL enter `https://testingbots.localtunnel.me/slack/receive` (or any other subdomain you specified in the previous step).
-9. Return to https://my.slack.com/apps/build/custom-integration and this time, create an Slash Command. In the URL enter `https://testingbots.localtunnel.me/slack/receive` (or any other subdomain you specified in the previous step).
-10. In another window, go to https://wit.ai/ and create a new app by importing `NumberBotApp.zip`.
-11. Once the app is created, wait a few seconds and check if the circle next to the app name becomes green. As Wit.ai is still in beta, sometimes this doesn't happen, so go to the Settings tab to delete the app and create it again. You may have to do this a few times before the app shows a green status.
-12. Once the app is created correctly, go to the Settings tab and generate a Server Access Token if none is shown by clicking the *Reset Token* icon.
-13. In a terminal window, install the app dependencies with `npm install`
-14. Start the bot with the command `token=<YOUR_BOT_TOKEN> wit_token=<YOUR_WIT_AI_SERVER_ACCESS_TOKEN> cmd_token=<SLASH_COMMAND_TOKEN> node bot.js` by copying the token given by Slack (when you created the bot), Wit.ai, and the Slash Command token (given when you created the command).
-15. Play with the bot by sending a message with the keyword configured to trigger the Outgoing Webhook and by executing the configured Slash Command.
+1. Fork this repository into your own Github account.
+2. go to https://wit.ai/ and create a new app by importing `NumberBotApp.zip`.
+3. Once the app is created, wait a few seconds and check if the circle next to the app name becomes green. As Wit.ai is still in beta, sometimes this doesn't happen, so go to the Settings tab to delete the app and create it again. You may have to do this a few times before the app shows a green status.
+4. Once the app is created correctly, go to the Settings tab and generate a Server Access Token if none is shown by clicking the *Reset Token* icon.
+5. Create an account on [Beepboop](https://beepboophq.com) with Github.
+6. Create a new Beepboop project with your forked repository.
+7. Follow the instructions to create an Slack app with a bot user and link it to your Beepboop project.
+8. Configure a Slash Command in your Slack app.
+9. In Beepboop, go to the *Settings* tab in your project and enable *Multi-Team Socket Mode*. Also, on this page, enter your Wit.ai token
+10. Make a commit to some file of the project to start the building process.
+11. On Beepboop start your bot on the *Status* tab.
+12. Go to the page of your bot at https://beepboophq.com/bots/<ID_BEEPBOOP_PROJECT> and install the Slack app in one of your Slack teams. 
+13. Play with the bot by sending a message with a number, asking for a trivia with a direct message, or executing the slash command.
 
 # License
 MIT
