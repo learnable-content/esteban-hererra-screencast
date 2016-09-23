@@ -10,6 +10,7 @@ const port = process.env.PORT || 3000;
 
 // Creates the Slack bot
 const controller = Botkit.slackbot({
+  debug: false,
   retry: Infinity, // reconnect to Slack RTM when connection goes bad
 });
 
