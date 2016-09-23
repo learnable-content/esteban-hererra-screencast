@@ -1,4 +1,4 @@
-# Interactive messages and rich formatting message in Slack
+# Interactive messages and rich formatted messages in Slack
 
 This Slackbot is ready to be deployed in [Beepboop](https://beepboophq.com) as a Slack App and shows how interactive messages work and some rich formatting options available in Botkit. It belongs to the sixth part of a series of tutorials about Slackbots.
 
