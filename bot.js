@@ -4,16 +4,15 @@ const Wit = require('node-wit').Wit;
 const Log = require('node-wit').log;
 const config = require('./config');
 
-// Cheking for the token
-if (!process.env.token) {
-  console.error('Error: Specify a Slack token in an environment variable');
+// Cheking for the Slack, Wit.ai, incoming webhook URL, and Slack Command tokens
+if (!process.env.token || !process.env.wit_token || !process.env.cmd_token) {
+  console.log('Error: Specify a Slack token, a Wit token, ' +
+    'and Slack Command Token as environment variables');
   process.exit(1);
 }
 
-if (!process.env.wit_token) {
-  console.error('Error: Specify a Wit token in an environment variable');
-  process.exit(1);
-}
+// Server port for outcoming webhook and slack command
+const port = process.env.port || 3000;
 
 // Creates the Slack bot
 const controller = Botkit.slackbot();
@@ -30,8 +29,42 @@ const botObj = controller.spawn({
   }
 });
 
-// Or configure an already spawned bot
-// botObj.configureIncomingWebhook({url: config.WEBHOOK_URL});
+// Outcoming webhook and slack command specific code
+controller.setupWebserver(port, (err, expressWebserver) => {
+  controller.createWebhookEndpoints(expressWebserver, [process.env.cmd_token]);
+});
+
+controller.on('outgoing_webhook', function(bot, message) {
+  console.log(message);
+
+  // reply to outgoing webhook command
+  bot.replyPublic(message,'Everyone can see the results of this webhook command');
+});
+
+controller.on('slash_command', (bot, message) => {
+  let number;
+
+  if (message.text !== '') {
+    number = message.text;
+  } else {
+    number = Math.floor(Math.random() * 100);
+  }
+
+  // Immediately reply a confirmation to user
+  bot.replyPrivate(message, 'Command received...');
+
+  request
+    .get(`http://numbersapi.com/${number}`)
+    .end((err, res) => {
+      if (err) {
+        bot.replyPrivateDelayed(message, 'Got an error, can you try again with a valid number?');
+      } else {
+        bot.replyPrivateDelayed(message, res.text);
+      }
+    }
+  );
+});
+
 
 // Incoming webhook specific code
 const sendTrivia = () => {
@@ -47,27 +80,6 @@ const sendTrivia = () => {
         // Send the webhook
         botObj.sendWebhook({
           text: res.text,
-          //username: 'new-bot-name',
-          //icon_emoji: ':point_right:',
-          //channel: '#general',
-          //channel: '@USER_NAME_FOR_DM',
-          /*attachments: [
-            {
-              fallback: 'Fallback message',
-              pretext: 'Pretext message',
-              color: '#0000ff',
-              fields: [
-                {
-                  title: 'Field title',
-                  value: 'Some text',
-                  short: false
-                }
-              ]
-            }
-          ],*/
-          //text: `${res.text} https://www.flickr.com/photos/saba1312/29474407015`,
-          //text: `${res.text} https://www.sitepoint.com/`,
-          //unfurl_links: true
         },
         (webhookErr, webhookRes) => {
           if (webhookErr) {
@@ -237,4 +249,3 @@ controller.hears(['(.*)'], ['direct_mention', 'mention'], (bot, message) => {
       console.error('Got an error from Wit: ', err.stack || err);
     });
 });
-

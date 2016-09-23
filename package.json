@@ -1,5 +1,5 @@
 {
-  "name": "slack-incoming-webhooks",
+  "name": "outgoing-webhooks-vs-slash-commands",
   "version": "1.0.0",
   "description": "",
   "main": "bot.js",
@@ -10,7 +10,7 @@
   "author": "Esteban Herrera",
   "license": "MIT",
   "dependencies": {
-    "botkit": "^0.2.2",
+    "botkit": "^0.2.1",
     "node-wit": "^4.1.0",
     "superagent": "^2.2.0"
   }
