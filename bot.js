@@ -210,7 +210,7 @@ const actions = {
           return resolve(newContext);
         }
       } else {
-        newContext.response = 'Sorry, I didn\'t understand what you want. I\'m still just a bot, ' +
+        newContext.response = 'Sorry, I didn\'t understand what you wanted. I\'m still just a bot, ' +
           'can you try again?';
         newContext.done = true;
 
