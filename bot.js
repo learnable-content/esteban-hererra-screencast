@@ -8,7 +8,7 @@ const config = require('./config');
 if (!process.env.token || !process.env.wit_token
     || !process.env.ow_token || !process.env.cmd_token) {
   console.log('Error: Specify a Slack token, a Wit token, ' +
-    'Outgoing Webhook token, and Slash Command Token as environment variables');
+    'Outgoing Webhook token, and Slash Command token as environment variables');
   process.exit(1);
 }
 
@@ -41,7 +41,7 @@ controller.on('outgoing_webhook', (bot, message) => {
   console.log(message);
 
   // reply to outgoing webhook command
-  bot.replyPublic(message, 'Everyone can see the results of this webhook command');
+  bot.replyPublic(message, 'Everyone can see the result of this webhook');
 });
 
 controller.on('slash_command', (bot, message) => {
