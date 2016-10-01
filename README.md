@@ -23,7 +23,7 @@ You can follow the [tutorial](http://sitepoint.com) to build this application or
 11. Once the app is created, wait a few seconds and check if the circle next to the app name becomes green. As Wit.ai is still in beta, sometimes this doesn't happen, so go to the Settings tab to delete the app and create it again. You may have to do this a few times before the app shows a green status.
 12. Once the app is created correctly, go to the Settings tab and generate a Server Access Token if none is shown by clicking the *Reset Token* icon.
 13. In a terminal window, install the app dependencies with `npm install`
-14. Start the bot with the command `token=<YOUR_BOT_TOKEN> wit_token=<YOUR_WIT_AI_SERVER_ACCESS_TOKEN> cmd_token=<SLASH_COMMAND_TOKEN> node bot.js` by copying the token given by Slack (when you created the bot), Wit.ai, and the Slash Command token (given when you created the command).
+14. Start the bot with the command `token=<YOUR_BOT_TOKEN> wit_token=<YOUR_WIT_AI_SERVER_ACCESS_TOKEN> ow_token=<OUTGOING_WEBHOOK_TOKEN> cmd_token=<SLASH_COMMAND_TOKEN> node bot.js` by copying the token given by Slack (when you created the bot), the Wit.ai token, the Outgoing Webhook token, and the Slash Command token.
 15. Play with the bot by sending a message with the keyword configured to trigger the Outgoing Webhook and by executing the configured Slash Command.
 
 # License
