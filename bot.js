@@ -4,10 +4,11 @@ const Wit = require('node-wit').Wit;
 const Log = require('node-wit').log;
 const config = require('./config');
 
-// Cheking for the Slack, Wit.ai, incoming webhook URL, and Slack Command tokens
-if (!process.env.token || !process.env.wit_token || !process.env.cmd_token) {
+// Cheking for the Slack, Wit.ai, Outgoing Webhook token, and Slack Command tokens
+if (!process.env.token || !process.env.wit_token
+    || !process.env.ow_token || !process.env.cmd_token) {
   console.log('Error: Specify a Slack token, a Wit token, ' +
-    'and Slack Command Token as environment variables');
+    'Outgoing Webhook token, and Slash Command Token as environment variables');
   process.exit(1);
 }
 
@@ -31,17 +32,21 @@ const botObj = controller.spawn({
 
 // Outcoming webhook and slack command specific code
 controller.setupWebserver(port, (err, expressWebserver) => {
-  controller.createWebhookEndpoints(expressWebserver, [process.env.cmd_token]);
+  controller.createWebhookEndpoints(expressWebserver,
+    [process.env.ow_token, process.env.cmd_token]
+  );
 });
 
-controller.on('outgoing_webhook', function(bot, message) {
+controller.on('outgoing_webhook', (bot, message) => {
   console.log(message);
 
   // reply to outgoing webhook command
-  bot.replyPublic(message,'Everyone can see the results of this webhook command');
+  bot.replyPublic(message, 'Everyone can see the results of this webhook command');
 });
 
 controller.on('slash_command', (bot, message) => {
+  console.log(message);
+
   let number;
 
   if (message.text !== '') {
@@ -249,3 +254,4 @@ controller.hears(['(.*)'], ['direct_mention', 'mention'], (bot, message) => {
       console.error('Got an error from Wit: ', err.stack || err);
     });
 });
+
