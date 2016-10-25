@@ -10,7 +10,7 @@
   "author": "Esteban Herrera",
   "license": "MIT",
   "dependencies": {
-    "botkit": "https://github.com/howdyai/botkit/tarball/master",
+    "botkit": "^0.4.0",
     "node-wit": "^4.1.0",
     "superagent": "^2.2.0"
   }
