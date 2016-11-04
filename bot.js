@@ -1,319 +1,147 @@
-const Botkit = require('botkit');
-const request = require('superagent');
-const Wit = require('node-wit').Wit;
-const Log = require('node-wit').log;
-const config = require('./config');
+const builder = require('botbuilder');
+const restify = require('restify');
+const mdb = require('moviedb')(process.env.MOVIE_DB_API_KEY);
 
-
-// Server port for outcoming webhook and slack command
-const port = process.env.PORT || 3000;
-
-// Creates the Slack bot
-const controller = Botkit.slackbot({
-  debug: false,
-  retry: Infinity, // reconnect to Slack RTM when connection goes bad
+// Setup Restify Server
+var server = restify.createServer();
+server.listen(process.env.port || process.env.PORT || 3978, function () {
+   console.log('%s listening to %s', server.name, server.url); 
 });
-
-// Starts the websocket connection with the incoming webhook configuration
-const beepboop = require('beepboop-botkit').start(controller, { debug: true });
-
-// Send the user who added the bot to their team a welcome message the first time it's connected
-beepboop.on('botkit.rtm.started', (bot, resource, meta) => {
-  const slackUserId = resource.SlackUserID;
-
-  if (meta.isNew && slackUserId) {
-    bot.startPrivateConversation({ user: slackUserId }, (err, convo) => {
-      if (err) {
-        console.log(err);
-      } else {
-        convo.say('I am a bot that has just joined your team');
-        convo.say('You must now /invite me to a channel so that I can be of use!');
-      }
-    });
-  }
+  
+// Create chat bot
+var connector = new builder.ChatConnector({
+    appId: process.env.MICROSOFT_APP_ID,
+    appPassword: process.env.MICROSOFT_APP_PASSWORD
 });
+var bot = new builder.UniversalBot(connector);
+server.post('/api/messages', connector.listen());
 
+const intents = new builder.IntentDialog();
+bot.dialog('/', intents);
 
-// Outcoming webhook and slack command specific code
-controller.setupWebserver(port, (err, expressWebserver) => {
-  controller.createWebhookEndpoints(expressWebserver, [process.env.SLACK_VERIFY_TOKEN]);
-});
+// Get this information with mdb.configuration()
+const imagesBaseUrl = 'https://image.tmdb.org/t/p/';
+const posterSize = 'w185';
 
-
-controller.on('slash_command', (bot, message) => {
-  let number;
-
-  if (message.text !== '') {
-    number = message.text;
-  } else {
-    number = Math.floor(Math.random() * 100);
-  }
-
-  // Immediately reply a confirmation to user
-  bot.replyPrivate(message, 'Command received :hourglass:');
-
-  request
-    .get(`http://numbersapi.com/${number}`)
-    .end((err, res) => {
-      if (err) {
-        bot.replyPrivateDelayed(message, 'Got an error, can you try again with a valid number?');
-      } else {
-        bot.replyPrivateDelayed(message, res.text);
-      }
-    }
-  );
-});
-
-
-// Incoming webhook specific code
-const sendTrivia = () => {
-  const date = new Date();
-  const today = `${date.getMonth() + 1}/${date.getDate()}`;
-
-  request
-    .get(`http://numbersapi.com/${today}/date`)
-    .end((err, res) => {
-      if (err) {
-        console.error('Got an error from the Numbers API: ', err.stack || err);
-      } else {
-        // Send the webhook to all teams
-        Object.keys(beepboop.workers).forEach((id) => {
-          // this is an instance of a botkit worker
-          const bot = beepboop.workers[id].worker;
-
-          if (bot.config.SlackIncomingWebhookURL) {
-            bot.configureIncomingWebhook({ url: bot.config.SlackIncomingWebhookURL });
-            bot.sendWebhook({
-              text: res.text,
-            },
-            (webhookErr, webhookRes) => {
-              if (webhookErr) {
-                console.error('Got an error when sending the webhook: ', webhookErr.stack || webhookErr);
-              } else {
-                console.log(webhookRes);
-              }
-            });
-          }
-        });
-      }
-    }
-  );
-};
-
-// Send an incoming webhook every X milliseconds
-const interval = config.SEND_TRIVIA_FREQ_MS;
-setInterval(sendTrivia, interval);
-
-
-// Listening for the event when the bot joins a channel
-controller.on('channel_joined', (bot, { channel: { id, name } }) => {
-  bot.say({
-    text: `Thank you for inviting me to channel ${name}`,
-    channel: id,
-  });
-});
-
-const CALLBACK_ID = 'triviaCommand';
-// When someone references a number in a message
-controller.hears(['[0-9]+'], ['ambient'], (bot, message) => {
-  bot.api.reactions.add({
-    timestamp: message.ts,
-    channel: message.channel,
-    name: 'thinking_face',
-  }, (err) => {
-    if (err) {
-      console.log(err);
-    }
-  });
-
-  const number = message.match[0];
-
-  // Reply with an message button
-  bot.reply(message, {
-    text: `What kind of trivia about ${number} do you want?`,
-    attachments: [
-      {
-        text: 'Choose the type of trivia',
-        callback_id: CALLBACK_ID,
-        attachment_type: 'default',
-        color: '#3AA3E3',
-        actions: [
-          {
-            name: 'general',
-            text: 'General',
-            value: number,
-            type: 'button',
-          },
-          {
-            name: 'math',
-            text: 'Math',
-            value: number,
-            type: 'button',
-          },
-          {
-            name: 'date',
-            text: 'Date',
-            value: number,
-            type: 'button',
-          },
-        ],
-      },
-    ],
-  });
-});
-
-controller.on('interactive_message_callback', (bot, message) => {
-  console.log(message);
-  bot.replyAcknowledge();
-
-  if (message.callback_id === CALLBACK_ID) {
-    const response = message.actions[0];
-    const type = response.name !== 'general'
-                   ? response.name
-                   : '';
-    const number = response.value;
-
-    request
-      .get(`http://numbersapi.com/${number}/${type}`)
-      .end((err, res) => {
-        if (err) {
-          bot.replyInteractive(message, 'Got an error, can you try again with a valid number?');
-        } else {
-          bot.replyInteractive(message, res.text);
-        }
-      });
-  }
-});
-
-// Wit.ai bot specific code
-
-// This will contain all user sessions.
-// Each session has an entry:
-// sessionId -> {userId, context: sessionState, botObject, messageObject}
-const sessions = {};
-
-const maybeCreateSession = (userId, bot, message) => {
-  if (!sessions[userId]) {
-    // No session found for user, let's create a new one
-    sessions[userId] = {
-      userId,
-      context: {},
-      bot,
-      message,
-    };
-  }
-
-  return userId;
-};
-
-// Extract an entity value from the entities returned by Wit
-const firstEntityValue = (entities, entity) => {
-  const match = entities && entities[entity];
-  const isFullArray = Array.isArray(match) && match.length > 0;
-  const val = isFullArray ? match[0].value : null;
-
-  if (!val) {
-    return null;
-  }
-
-  return typeof val === 'object' ? val.value : val;
-};
-
-// Our bot actions
-const actions = {
-  send(req, res) {
-    // Our bot has something to say!
-    // Let's retrieve the bot and message objects to post a message
-    const { bot, message } = sessions[req.sessionId];
-    const text = res.text;
-
-    // We return a promise to let our bot know when we're done sending
-    return new Promise((resolve) => {
-      bot.reply(message, text);
-      return resolve();
-    });
+// Get the supported genres with mdb.genreList()
+const genres = {
+  action: {
+    id: 28,
   },
-  getTrivia({ context, entities }) {
-    return new Promise((resolve) => {
-      const intent = firstEntityValue(entities, 'intent');
-      const rawType = firstEntityValue(entities, 'type');
-      const random = firstEntityValue(entities, 'random');
-
-      const type = (rawType
-          ? rawType !== 'general' ? rawType : ''
-          : context.type)
-        || '';
-      const number = random ? 'random' : firstEntityValue(entities, 'number');
-      const newContext = Object.assign({}, context);
-
-      if ((intent && intent === 'trivia') || number) {
-        if (number) {
-          // Make the request to the API
-          request
-            .get(`http://numbersapi.com/${number}/${type}`)
-            .end((err, { text }) => {
-              if (err) {
-                newContext.response = 'Sorry, I couldn\'t process your request';
-              } else {
-                newContext.response = `*This is what I found* :point_down:\n_${text}_`;
-              }
-              newContext.done = true;
-              delete newContext.missingNumber;
-
-              return resolve(newContext);
-            }
-          );
-        } else {
-          newContext.type = type;
-          newContext.missingNumber = true;
-
-          return resolve(newContext);
-        }
-      } else {
-        newContext.response = 'Sorry, I didn\'t understand what you wanted. I\'m still just a bot, ' +
-          'can you try again?';
-        newContext.done = true;
-
-        return resolve(newContext);
-      }
-    });
+  adventure: {
+    id: 12,
+  },
+  animation: {
+    id: 16,
+  },
+  comedy: {
+    id: 35,
+  },
+  documentary: {
+    id: 99,
+  },
+  drama: {
+    id: 18,
+  },
+  horror: {
+    id: 27,
+  },
+  mistery: {
+    id: 9648,
+  },
+  romance: {
+    id: 10749,
+  },
+  '(quit)': {
+    id: 0,
   },
 };
 
-// Setting up our bot
-const wit = new Wit({
-  accessToken: process.env.wit_token,
-  actions,
-  logger: new Log.Logger(Log.INFO),
-});
+const getMovie = (session) => {
+  session.sendTyping();
 
-controller.hears(['(.*)'], ['direct_mention', 'mention'], (bot, message) => {
-  bot.startTyping(message);
-  const [text] = message.match;
+  mdb.discoverMovie({
+    sort_by: 'popularity.desc',
+    with_genres: session.dialogData.genre,
+    primary_release_year: session.dialogData.year,
+  }, (err, res) => {
+    const msg = new builder.Message(session);
+    if (!err) {
+      const movies = res.results;
+      const index = Math.floor(Math.random() * movies.length);
 
-  // We retrieve the user's current session, or create one if it doesn't exist
-  // This is needed for our bot to figure out the conversation history
-  const sessionId = maybeCreateSession(message.user, bot, message);
+      msg.text('I found this movie: \n\n**%(title)s**\n\n*%(overview)s*', movies[index]);
 
-  // Let's forward the message to the Wit.ai Bot Engine
-  // This will run all actions until our bot has nothing left to do
-  wit.runActions(
-    sessionId, // the user's current session
-    text, // the user's message
-    sessions[sessionId].context // the user's current session state
-  ).then((context) => {
-    // Our bot did everything it has to do.
-    // Now it will be waiting for further user messages to proceed.
-
-    // Based on the session state, you might want to reset or update the session.
-    if (context.done) {
-      delete sessions[sessionId];
+      if (movies[index].poster_path) {
+        msg.attachments([{
+          contentType: 'image/jpeg',
+          contentUrl: imagesBaseUrl + posterSize + movies[index].poster_path,
+        }]);
+      }
     } else {
-      // Updating the user's current session state
-      sessions[sessionId].context = context;
+      msg.text('Oops, an error, can you please say \'movie\' again?');
     }
-  })
-    .catch((err) => {
-      console.error('Got an error from Wit: ', err.stack || err);
-    });
-});
+
+    session.endDialog(msg);
+  });
+};
+
+intents.onDefault([
+  (session, args, next) => {
+    if (!session.userData.name) {
+      session.beginDialog('/askName');
+    } else {
+      next();
+    }
+  },
+  session =>
+    session.send('I\'m new around here %s. I only know the \'movie\' command, say it if you want a movie recommendation', session.userData.name),
+]);
+
+bot.dialog('/askName', [
+  session =>
+    builder.Prompts.text(session, 'Hi! I\'m MovieBot. What\'s your name?'),
+  (session, results) => {
+    session.userData.name = results.response;
+    session.endDialog('Hello %s', session.userData.name);
+  },
+]);
+
+intents.matches(/^movie/i, [
+  session =>
+    session.beginDialog('/genrePrompt'),
+  (session, results) => {
+    if (results.response.id > 0) {
+      session.dialogData.genre = results.response.id;
+      session.beginDialog('/yearPrompt');
+    } else {
+      session.send('Okay, maybe next time');
+      session.endDialog();
+    }
+  },
+  (session, results) => {
+    session.dialogData.year = results.response;
+    getMovie(session);
+  },
+]);
+
+bot.dialog('/genrePrompt', [
+  session =>
+    builder.Prompts.choice(session, 'What genre do you want?', genres),
+  (session, results) => {
+    const choice = genres[results.response.entity.toLowerCase()];
+
+    session.endDialogWithResult({ response: choice });
+  },
+]);
+
+bot.dialog('/yearPrompt', [
+  session =>
+    builder.Prompts.text(session, 'Enter a release year (in the format yyyy) if you want to specify one or just respond with something like \'no\' otherwise'),
+  (session, results) => {
+    const matched = results.response.match(/\d{4}/g);
+
+    session.endDialogWithResult({ response: matched });
+  },
+]);
+
