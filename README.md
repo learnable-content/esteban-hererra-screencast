@@ -13,7 +13,7 @@ You can follow the [tutorial](http://sitepoint.com) to build this application or
 
 # Installation
 1. Fork this repository into your own Github account.
-2. Start Ngrok and copy the HTTPS URL you're given.
+2. Start Ngrok in a console window using `ngrok http 3978` and copy the HTTPS URL you're given.
 3. Go to https://dev.botframework.com/ and register a new bot with the Ngrok URL.
 4. Copy the MICROSOFT_APP_ID and MICROSOFT_APP_PASSWORD keys (your password is only shown one time).
 5. Start the app with something like MOVIE_DB_API_KEY=xxxxxx MICROSOFT_APP_ID=xxxxxx MICROSOFT_APP_PASSWORD=xxxxxx node bot.js.
