@@ -3,17 +3,17 @@ const restify = require('restify');
 const mdb = require('moviedb')(process.env.MOVIE_DB_API_KEY);
 
 // Setup Restify Server
-var server = restify.createServer();
+const server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, function () {
    console.log('%s listening to %s', server.name, server.url); 
 });
   
 // Create chat bot
-var connector = new builder.ChatConnector({
+const connector = new builder.ChatConnector({
     appId: process.env.MICROSOFT_APP_ID,
     appPassword: process.env.MICROSOFT_APP_PASSWORD
 });
-var bot = new builder.UniversalBot(connector);
+const bot = new builder.UniversalBot(connector);
 server.post('/api/messages', connector.listen());
 
 const intents = new builder.IntentDialog();
@@ -46,7 +46,7 @@ const genres = {
   horror: {
     id: 27,
   },
-  mistery: {
+  mystery: {
     id: 9648,
   },
   romance: {
@@ -95,13 +95,14 @@ intents.onDefault([
     }
   },
   session =>
-    session.send('I\'m new around here %s. I only know the \'movie\' command, say it if you want a movie recommendation', session.userData.name),
+    session.send(`I'm new around here %s. I only know the 'movie' command, say it if you want a movie recommendation`, session.userData.name),
 ]);
 
 bot.dialog('/askName', [
   session =>
-    builder.Prompts.text(session, 'Hi! I\'m MovieBot. What\'s your name?'),
+    builder.Prompts.text(session, `Hi! I'm MovieBot. What's your name?`),
   (session, results) => {
+    // should we be mutating the session like this?
     session.userData.name = results.response;
     session.endDialog('Hello %s', session.userData.name);
   },
@@ -127,7 +128,7 @@ intents.matches(/^movie/i, [
 
 bot.dialog('/genrePrompt', [
   session =>
-    builder.Prompts.choice(session, 'What genre do you want?', genres),
+    builder.Prompts.choice(session, 'What genre would you like?', genres),
   (session, results) => {
     const choice = genres[results.response.entity.toLowerCase()];
 
@@ -137,7 +138,7 @@ bot.dialog('/genrePrompt', [
 
 bot.dialog('/yearPrompt', [
   session =>
-    builder.Prompts.text(session, 'Enter a release year (in the format yyyy) if you want to specify one or just respond with something like \'no\' otherwise'),
+    builder.Prompts.text(session, `Enter a release year (in the format yyyy) if you want to specify one or just respond with something like 'no' otherwise`),
   (session, results) => {
     const matched = results.response.match(/\d{4}/g);
 
