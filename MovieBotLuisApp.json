@@ -1,0 +1,352 @@
+{
+  "luis_schema_version": "1.3.0",
+  "name": "MovieBotLuisApp",
+  "desc": "",
+  "culture": "en-us",
+  "intents": [
+    {
+      "name": "Hello"
+    },
+    {
+      "name": "Movie"
+    },
+    {
+      "name": "None"
+    }
+  ],
+  "entities": [
+    {
+      "name": "genre"
+    },
+    {
+      "name": "sort",
+      "children": [
+        "votes",
+        "popularity"
+      ]
+    }
+  ],
+  "composites": [],
+  "bing_entities": [
+    "datetime",
+    "number"
+  ],
+  "actions": [],
+  "model_features": [
+    {
+      "name": "genre",
+      "mode": true,
+      "words": "action,adventure,animation,comedy,documentary,drama,horror,mystery,romance",
+      "activated": true
+    },
+    {
+      "name": "sortWords",
+      "mode": true,
+      "words": "best,highest rated,popular",
+      "activated": true
+    }
+  ],
+  "regex_features": [],
+  "utterances": [
+    {
+      "text": "hi",
+      "intent": "Hello",
+      "entities": []
+    },
+    {
+      "text": "suggest a movie",
+      "intent": "Movie",
+      "entities": []
+    },
+    {
+      "text": "hello",
+      "intent": "Hello",
+      "entities": []
+    },
+    {
+      "text": "hey",
+      "intent": "Hello",
+      "entities": []
+    },
+    {
+      "text": "what's up",
+      "intent": "Hello",
+      "entities": []
+    },
+    {
+      "text": "suggest a romance movie",
+      "intent": "Movie",
+      "entities": [
+        {
+          "entity": "genre",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "suggest an action movie from 2011",
+      "intent": "Movie",
+      "entities": [
+        {
+          "entity": "genre",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "what is the most popular horror movie?",
+      "intent": "Movie",
+      "entities": [
+        {
+          "entity": "genre",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "sort::popularity",
+          "startPos": 4,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "can you give me the best five movies from 2012?",
+      "intent": "Movie",
+      "entities": [
+        {
+          "entity": "sort::votes",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "what is the highest rated animation movie from last year?",
+      "intent": "Movie",
+      "entities": [
+        {
+          "entity": "genre",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "sort::votes",
+          "startPos": 3,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "hi again",
+      "intent": "Hello",
+      "entities": []
+    },
+    {
+      "text": "hi?",
+      "intent": "Hello",
+      "entities": []
+    },
+    {
+      "text": "best horror movie from last year",
+      "intent": "Movie",
+      "entities": [
+        {
+          "entity": "genre",
+          "startPos": 1,
+          "endPos": 1
+        },
+        {
+          "entity": "sort::popularity",
+          "startPos": 0,
+          "endPos": 0
+        }
+      ]
+    },
+    {
+      "text": "give me a romance movie from last year",
+      "intent": "Movie",
+      "entities": [
+        {
+          "entity": "genre",
+          "startPos": 3,
+          "endPos": 3
+        }
+      ]
+    },
+    {
+      "text": "what are the best four documentaries from 2000?",
+      "intent": "Movie",
+      "entities": [
+        {
+          "entity": "sort::votes",
+          "startPos": 3,
+          "endPos": 3
+        }
+      ]
+    },
+    {
+      "text": "give me the best three romance movies",
+      "intent": "Movie",
+      "entities": [
+        {
+          "entity": "genre",
+          "startPos": 5,
+          "endPos": 5
+        },
+        {
+          "entity": "sort::votes",
+          "startPos": 3,
+          "endPos": 3
+        }
+      ]
+    },
+    {
+      "text": "can you give me 3 comedy movies",
+      "intent": "Movie",
+      "entities": [
+        {
+          "entity": "genre",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "can you give me 3 comedies",
+      "intent": "Movie",
+      "entities": [
+        {
+          "entity": "genre",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "can you give me 5 comedies",
+      "intent": "Movie",
+      "entities": [
+        {
+          "entity": "genre",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "can you give me three comedies",
+      "intent": "Movie",
+      "entities": [
+        {
+          "entity": "genre",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    },
+    {
+      "text": "give the best 3 action movies of 2015",
+      "intent": "Movie",
+      "entities": [
+        {
+          "entity": "genre",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "sort::votes",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "what is the most popular movie from 2013?",
+      "intent": "Movie",
+      "entities": [
+        {
+          "entity": "sort::popularity",
+          "startPos": 4,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "what is the most popular movie from 2013",
+      "intent": "Movie",
+      "entities": [
+        {
+          "entity": "sort::popularity",
+          "startPos": 4,
+          "endPos": 4
+        }
+      ]
+    },
+    {
+      "text": "ffff",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "give the best 2 comedy movies of 2015",
+      "intent": "Movie",
+      "entities": [
+        {
+          "entity": "genre",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "sort::votes",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "give the best 3 action movies of last year",
+      "intent": "Movie",
+      "entities": [
+        {
+          "entity": "genre",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "sort::votes",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "give the best 3 action movies of last month",
+      "intent": "Movie",
+      "entities": [
+        {
+          "entity": "genre",
+          "startPos": 4,
+          "endPos": 4
+        },
+        {
+          "entity": "sort::votes",
+          "startPos": 2,
+          "endPos": 2
+        }
+      ]
+    },
+    {
+      "text": "what is the one most popular movie from 2013",
+      "intent": "Movie",
+      "entities": [
+        {
+          "entity": "sort::popularity",
+          "startPos": 5,
+          "endPos": 5
+        }
+      ]
+    }
+  ]
+}
