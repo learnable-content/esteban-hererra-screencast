@@ -89,6 +89,8 @@ const getMovie = (session) => {
       let number = session.dialogData.number ? session.dialogData.number : 1;
       const maxMoviesToShow = 20;
 
+      /* For simplicity, we only show a max of 20 movies
+         (the first page of results returned by the API) */
       if (number > maxMoviesToShow) {
         number = maxMoviesToShow;
         session.send(`Sorry, I can only show the first ${maxMoviesToShow} movies:\n\n`);
