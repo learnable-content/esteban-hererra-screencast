@@ -26,3 +26,6 @@ You can follow the [tutorial](http://sitepoint.com) to build this application or
 
 # License
 MIT
+
+![Powered by https://www.themoviedb.org](https://www.themoviedb.org/assets/9b3f9c24d9fd5f297ae433eb33d93514/images/v4/logos/408x161-powered-by-rectangle-green.png)
+
