@@ -13,6 +13,7 @@
     "botbuilder": "^3.4.4",
     "datejs": "^1.0.0-rc3",
     "moviedb": "^0.2.7",
-    "restify": "^4.2.0"
+    "restify": "^4.2.0",
+    "words-to-num": "0.0.2"
   }
 }

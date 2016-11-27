@@ -1,6 +1,7 @@
 const builder = require('botbuilder');
 const restify = require('restify');
 const mdb = require('moviedb')(process.env.MOVIE_DB_API_KEY);
+const wordsToNum = require('words-to-num');
 require('datejs');
 
 // Setup Restify Server
@@ -159,11 +160,11 @@ intents.matches('Hello', [
       session.dialogData.year = date ? date.getFullYear() : null;
     }
 
-    // If there's a number, that number should be the year
+    // If there's a number, that number shouldn't be the year
     if (numberEntity) {
-      session.dialogData.number = (dateEntity && dateEntity.resolution.date === numberEntity.entity)
-                                    ? 1
-                                    : numberEntity.entity;
+      // In case the number is a word, for example 'two', convert it to a digit
+      const num = wordsToNum.convert(numberEntity.entity);
+      session.dialogData.number = session.dialogData.year === num ? 1 : num;
     }
 
     session.dialogData.sort = sortPopularityEntity ? 'popularity' : 'votes';
