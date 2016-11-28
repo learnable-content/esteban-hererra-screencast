@@ -104,7 +104,7 @@ const getMovie = (session) => {
           // Add the image as a message attachment
           msg.attachments([{
             contentType: 'image/jpeg',
-            contentUrl: imagesBaseUrl + posterSize + movie.poster_path,
+            contentUrl: `${imagesBaseUrl}${posterSize}${movie.poster_path}`,
           }]);
         }
         session.send(msg);
@@ -158,14 +158,18 @@ intents.matches('Hello', [
 
     // If there's a date, parse it to get the year
     if (dateEntity) {
+      // We need to parse the date because LUIS doesn't return a date instace or timestamp, but a string
       const date = Date.parse(dateEntity.resolution.date);
       session.dialogData.year = date ? date.getFullYear() : null;
     }
 
     // If there's a number, that number shouldn't be the year
     if (numberEntity) {
-      // In case the number is a word, for example 'two', convert it to a digit
+      /* Numbers are returned by LUIS as they are entered, for example, "one",
+        so let's try to convert it to a digit just in case */
       const num = wordsToNum.convert(numberEntity.entity);
+      /* If the year is a number, like 2015, is recognized by LUIS  as both, a date and a number, 
+        so let's check if the returned number entity is equal to the year to discard it */
       session.dialogData.number = session.dialogData.year === num ? 1 : num;
     }
 
