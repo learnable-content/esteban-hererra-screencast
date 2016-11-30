@@ -132,7 +132,7 @@ intents.matches('Hello', [
     }
   },
   session =>
-    session.send('Hi %s. I know about movies, ask me for recommendations...', session.userData.name),
+    session.send('Hi %s. I know about movies, so ask me for recommendations if you want', session.userData.name),
 ])
 
 // When LUIS.ai couldn't match a better intent
@@ -158,7 +158,8 @@ intents.matches('Hello', [
 
     // If there's a date, parse it to get the year
     if (dateEntity) {
-      // We need to parse the date because LUIS doesn't return a date instace or timestamp, but a string
+      /* We need to parse the date because LUIS doesn't return a date instace or timestamp,
+        but a string */
       const date = Date.parse(dateEntity.resolution.date);
       session.dialogData.year = date ? date.getFullYear() : null;
     }
@@ -168,7 +169,7 @@ intents.matches('Hello', [
       /* Numbers are returned by LUIS as they are entered, for example, "one",
         so let's try to convert it to a digit just in case */
       const num = wordsToNum.convert(numberEntity.entity);
-      /* If the year is a number, like 2015, is recognized by LUIS  as both, a date and a number, 
+      /* If the year is a number, like 2015, is recognized by LUIS  as both, a date and a number,
         so let's check if the returned number entity is equal to the year to discard it */
       session.dialogData.number = session.dialogData.year === num ? 1 : num;
     }
