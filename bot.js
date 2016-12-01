@@ -146,7 +146,7 @@ intents.matches('Hello', [
     // Resolve and store any entities passed from LUIS.
     const genreEntity = builder.EntityRecognizer.findEntity(args.entities, 'genre');
     const sortPopularityEntity = builder.EntityRecognizer.findEntity(args.entities, 'sort::popularity');
-    const numberEntity = builder.EntityRecognizer.findEntity(args.entities, 'number');
+    const numberEntity = builder.EntityRecognizer.findEntity(args.entities, 'builtin.number');
     const dateEntity = builder.EntityRecognizer.findEntity(args.entities, 'builtin.datetime.date');
 
     // If there's a genre, find the best match to extract the correct genre object
@@ -202,7 +202,7 @@ bot.dialog('/askName', [
   (session, results) => {
     // Store the user's name on the userData session attribute
     session.userData.name = results.response;
-    session.endDialog('Hello %s', session.userData.name);
+    session.endDialog();
   },
 ]);
 
