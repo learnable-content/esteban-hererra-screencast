@@ -2,6 +2,7 @@ const builder = require('botbuilder');
 const restify = require('restify');
 const mdb = require('moviedb')(process.env.MOVIE_DB_API_KEY);
 const wordsToNum = require('words-to-num');
+const request = require('superagent');
 require('datejs');
 
 // Setup Restify Server
@@ -132,7 +133,42 @@ intents.matches('Hello', [
     }
   },
   session =>
-    session.send('Hi %s. I know about movies, so ask me for recommendations if you want', session.userData.name),
+    builder.Prompts.text(session, `Hi ${session.userData.name}. How are you?`),
+  (session, results) => {
+    // Call the Text Analytics API
+    request
+      .post('https://westus.api.cognitive.microsoft.com/text/analytics/v2.0/sentiment')
+      .send({
+        // It takes an array of documents
+        documents: [
+          {
+            language: 'en',
+            id: '1', // a unique identifier is required
+            text: results.response,
+          },
+        ],
+      })
+      // The API key
+      .set('Ocp-Apim-Subscription-Key', process.env.TEXT_ANALYTICS_API_KEY)
+      // The API only accepts JSON for now
+      .set('Content-Type', 'application/json')
+      .end((err, res) => {
+        if (!err) {
+          console.log(res.body);
+          // If there's a positive sentiment
+          if (res.body.documents[0].score > 0.6) {
+            session.send('Good');
+          } else { // If there's a negative sentiment
+            session.send(`I'm detecting a negative sentiment, maybe a funny movie can cheer you up?`);
+
+            session.dialogData.genre = genres.comedy.id;
+            getMovie(session);
+          }
+        }
+
+        session.send('I know about movies, so ask me for recommendations if you want');
+      });
+  },
 ])
 
 // When LUIS.ai couldn't match a better intent
@@ -159,7 +195,7 @@ intents.matches('Hello', [
     // If there's a date, parse it to get the year
     if (dateEntity) {
       /* We need to parse the date because LUIS doesn't return a date instace or timestamp,
-        but a string */
+       but a string */
       const date = Date.parse(dateEntity.resolution.date);
       session.dialogData.year = date ? date.getFullYear() : null;
     }
