@@ -81,7 +81,7 @@ const getMovie = (session) => {
         // Add the image as a message attachment
         msg.attachments([{
           contentType: 'image/jpeg',
-          contentUrl: `${imagesBaseUrl}${posterSize}${movie.poster_path}`,
+          contentUrl: `${imagesBaseUrl}${posterSize}${movies[index].poster_path}`,
         }]);
       }
     } else { // There's an error
