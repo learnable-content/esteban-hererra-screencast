@@ -88,6 +88,7 @@ const getMovie = (session) => {
     if (!err) {
       const movies = res.results;
       let number = session.dialogData.number ? session.dialogData.number : 1;
+      let startIndex = 0;
       const maxMoviesToShow = 20;
 
       /* For simplicity, we only show a max of 20 movies
@@ -95,9 +96,14 @@ const getMovie = (session) => {
       if (number > maxMoviesToShow) {
         number = maxMoviesToShow;
         session.send(`Sorry, I can only show the first ${maxMoviesToShow} movies:\n\n`);
+      } else if (number === 1) {
+        /* If the user only requested one movie
+          let's randomly choose one */
+        startIndex = Math.floor(Math.random() * maxMoviesToShow);
+        number = startIndex + 1;
       }
 
-      movies.slice(0, number).forEach((movie) => {
+      movies.slice(startIndex, number).forEach((movie) => {
         msg.text('**%(title)s**\n\n*%(overview)s*', movie);
 
         // If the movie has a poster image
