@@ -82,12 +82,13 @@ const getMovie = (session) => {
 
   // Call the Movie DB API passing the genre and release year and sorting by popularity
   mdb.discoverMovie(params, (err, res) => {
-    let msg = new builder.Message(session);
+    const msg = new builder.Message(session);
 
     // If there's no error
     if (!err) {
       const movies = res.results;
       let number = session.dialogData.number ? session.dialogData.number : 1;
+      let startIndex = 0;
       const maxMoviesToShow = 20;
 
       /* For simplicity, we only show a max of 20 movies
@@ -95,29 +96,42 @@ const getMovie = (session) => {
       if (number > maxMoviesToShow) {
         number = maxMoviesToShow;
         session.send(`Sorry, I can only show the first ${maxMoviesToShow} movies:\n\n`);
+      } else if (number === 1) {
+        /* If the user only requested one movie
+          let's randomly choose one */
+        startIndex = Math.floor(Math.random() * maxMoviesToShow);
+        number = startIndex + 1;
       }
 
-      movies.slice(0, number).forEach((movie) => {
-        msg.text('**%(title)s**\n\n*%(overview)s*', movie);
+      const cards = [];
+
+      movies.slice(startIndex, number).forEach((movie) => {
+        const card = new builder.HeroCard(session);
+        card.title(movie.title);
+        card.text(movie.overview);
 
         // If the movie has a poster image
         if (movie.poster_path) {
           // Add the image as a message attachment
-          msg.attachments([{
-            contentType: 'image/jpeg',
-            contentUrl: `${imagesBaseUrl}${posterSize}${movie.poster_path}`,
-          }]);
+          const imgUrl = `${imagesBaseUrl}${posterSize}${movie.poster_path}`;
+          card.images([
+            builder.CardImage.create(session, imgUrl)
+              .tap(builder.CardAction.showImage(session, imgUrl)),
+          ])
+          .buttons([
+            builder.CardAction.openUrl(session, `https://www.themoviedb.org/movie/${movie.id}`, 'Movie Information'),
+          ]);
+          cards.push(card);
         }
-        session.send(msg);
-        msg = new builder.Message(session);
       });
+
+      msg.attachmentLayout(builder.AttachmentLayout.carousel).attachments(cards);
     } else { // There's an error
       msg.text('Oops, an error, can you please try again?');
-      session.send(msg);
     }
 
     // End the dialog
-    session.endDialog();
+    session.endDialog(msg);
   });
 };
 

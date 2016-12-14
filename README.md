@@ -1,6 +1,6 @@
-# Microsoft Cognitive Services Text Analytics API
+# Formatting messages in Skype with cards
 
-This app shows how you a Skype bot that can process natural language using a LUIS.ai model and detect the sentiment of a user message using the (Text Analytics API](https://www.microsoft.com/cognitive-services/en-us/text-analytics-api), part of the [Microsoft Cognitive Services](https://www.microsoft.com/cognitive-services).
+This app shows how to format messages with cards in a Skype bot.
 
 You can follow the [tutorial](http://sitepoint.com) to build this application or jump straight to the code.
 
