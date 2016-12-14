@@ -1,5 +1,5 @@
 {
-  "name": "formatting-messages-in-skype-with-cards",
+  "name": "the-skype-calling-api",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -11,6 +11,7 @@
   "license": "MIT",
   "dependencies": {
     "botbuilder": "^3.4.4",
+    "botbuilder-calling": "^3.0.1",
     "datejs": "^1.0.0-rc3",
     "moviedb": "^0.2.7",
     "restify": "^4.2.0",
