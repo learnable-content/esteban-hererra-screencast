@@ -89,10 +89,10 @@ const getMovie = (session) => {
       const movies = res.results;
       let number = session.dialogData.number ? session.dialogData.number : 1;
       let startIndex = 0;
-      const maxMoviesToShow = 20;
+      const maxMoviesToShow = 10;
 
-      /* For simplicity, we only show a max of 20 movies
-         (the first page of results returned by the API) */
+      /* For simplicity, we only show a max of 10 movies
+         (the max number of movies that can be shown in a carousel) */
       if (number > maxMoviesToShow) {
         number = maxMoviesToShow;
         session.send(`Sorry, I can only show the first ${maxMoviesToShow} movies:\n\n`);
@@ -109,6 +109,9 @@ const getMovie = (session) => {
         const card = new builder.HeroCard(session);
         card.title(movie.title);
         card.text(movie.overview);
+        card.buttons([
+          builder.CardAction.openUrl(session, `https://www.themoviedb.org/movie/${movie.id}`, 'Movie Information'),
+        ]);
 
         // If the movie has a poster image
         if (movie.poster_path) {
@@ -117,12 +120,10 @@ const getMovie = (session) => {
           card.images([
             builder.CardImage.create(session, imgUrl)
               .tap(builder.CardAction.showImage(session, imgUrl)),
-          ])
-          .buttons([
-            builder.CardAction.openUrl(session, `https://www.themoviedb.org/movie/${movie.id}`, 'Movie Information'),
           ]);
-          cards.push(card);
         }
+        
+        cards.push(card);
       });
 
       msg.attachmentLayout(builder.AttachmentLayout.carousel).attachments(cards);
