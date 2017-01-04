@@ -67,7 +67,7 @@ const genres = {
 
 bot.dialog('/', [
   session =>
-    builder.Prompts.text(session, 'Hi! Call me'),
+    session.send('Hi! Call me'),
 ]);
 
 callingBot.dialog('/', [
@@ -80,8 +80,8 @@ callingBot.dialog('/', [
 
     // Prompt user to select a menu option
     calling.Prompts.choice(session, new calling.PlayPromptAction(session).prompts(promptList), [
-        { name: 'movie', speechVariation: ['movie', 'film'] },
-        { name: 'quit', speechVariation: ['quit', 'end call', 'hangup', 'goodbye'] },
+      { name: 'movie', speechVariation: ['movie', 'film'] },
+      { name: 'quit', speechVariation: ['quit', 'end call', 'hangup', 'goodbye'] },
     ]);
   },
   (session, results) => {
@@ -145,16 +145,16 @@ callingBot.dialog('/', [
 callingBot.dialog('/callingGenrePrompt', [
   (session) => {
     calling.Prompts.choice(session, prompts.movie.prompt, [
-        { name: 'action', dtmfVariation: '1' },
-        { name: 'adventure', dtmfVariation: '2' },
-        { name: 'animation', dtmfVariation: '3' },
-        { name: 'comedy', dtmfVariation: '4' },
-        { name: 'documentary', dtmfVariation: '5' },
-        { name: 'drama', dtmfVariation: '6' },
-        { name: 'horror', dtmfVariation: '7' },
-        { name: 'mystery', dtmfVariation: '8' },
-        { name: 'romance', dtmfVariation: '9' },
-        { name: 'repeat', dtmfVariation: '0' },
+      { name: 'action', dtmfVariation: '1' },
+      { name: 'adventure', dtmfVariation: '2' },
+      { name: 'animation', dtmfVariation: '3' },
+      { name: 'comedy', dtmfVariation: '4' },
+      { name: 'documentary', dtmfVariation: '5' },
+      { name: 'drama', dtmfVariation: '6' },
+      { name: 'horror', dtmfVariation: '7' },
+      { name: 'mystery', dtmfVariation: '8' },
+      { name: 'romance', dtmfVariation: '9' },
+      { name: 'repeat', dtmfVariation: '0' },
     ]);
   },
   (session, results) => {
